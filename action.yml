@@ -8,11 +8,11 @@ inputs:
     description: "Branch"
 
   excludeBot:
-    required: false
+    required: true
     default: "false"
     description: "Exclude actions@github.com from contributors"
   notGenerateContributorsMd:
-    required: false
+    required: true
     default: "false"
     description: "Not commit CONTRIBUTORS.md ?"
   commitMessageBot:

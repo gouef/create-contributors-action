@@ -38,6 +38,10 @@ on:
         type: string
         default: "[Update] Automate update contributors"
         description: "Commit message which bot will do"
+      svgBranch:
+        required: true
+        default: "contributors-svg"
+        description: "Branch where will save svgs of contributors"
 
   schedule:
     - cron: '0 0 * * 1'
@@ -62,8 +66,8 @@ jobs:
         with:
           excludeBot: ${{ inputs.excludeBot || false}}
           notGenerateContributorsMd: ${{ inputs.notGenerateContributorsMd || false }}
-          commitMessageBot: ${{ inputs.commitMessageBot }}
+          commitMessageBot: ${{ inputs.commitMessageBot || "[Update] Automate update contributors" }}
+          svgBranch:  ${{ inputs.svgBranch || "contributors-svg" }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 ```
