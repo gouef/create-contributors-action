@@ -43,10 +43,5 @@ jobs:
     steps:
       - name: Generate contributors
         uses: gouef/create-contributors-action@main
-        with:
-          excludeBot: ${{ inputs.excludeBot || false}}
-          notGenerateContributorsMd: ${{ inputs.notGenerateContributorsMd || false }}
-          commitMessageBot: ${{ inputs.commitMessageBot || "[Update] Automate update contributors" }}
-          svgBranch:  ${{ inputs.svgBranch || "contributors-svg" }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
