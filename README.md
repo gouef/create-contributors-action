@@ -1,47 +1,69 @@
 <img align=right width="168" src="docs/gouef_logo.png">
 
-# github-lib-template
-Github template for new libraries
+# Create contributors action
+Github action for create contributors list
 
-[![GoDoc](https://pkg.go.dev/badge/github.com/gouef/github-lib-template.svg)](https://pkg.go.dev/github.com/gouef/github-lib-template)
-[![GitHub stars](https://img.shields.io/github/stars/gouef/github-lib-template?style=social)](https://github.com/gouef/github-lib-template/stargazers)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gouef/github-lib-template)](https://goreportcard.com/report/github.com/gouef/github-lib-template)
-[![codecov](https://codecov.io/github/gouef/github-lib-template/branch/main/graph/badge.svg?token=YUG8EMH6Q8)](https://codecov.io/github/gouef/github-lib-template)
+[![GitHub stars](https://img.shields.io/github/stars/gouef/create-contributors-action?style=social)](https://github.com/gouef/create-contributors-action/stargazers)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gouef/create-contributors-action)](https://goreportcard.com/report/github.com/gouef/create-contributors-action)
 
 ## Versions
-![Stable Version](https://img.shields.io/github/v/release/gouef/github-lib-template?label=Stable&labelColor=green)
-![GitHub Release](https://img.shields.io/github/v/release/gouef/github-lib-template?label=RC&include_prereleases&filter=*rc*&logoSize=diago)
-![GitHub Release](https://img.shields.io/github/v/release/gouef/github-lib-template?label=Beta&include_prereleases&filter=*beta*&logoSize=diago)
+![Stable Version](https://img.shields.io/github/v/release/gouef/create-contributors-action?label=Stable&labelColor=green)
+![GitHub Release](https://img.shields.io/github/v/release/gouef/create-contributors-action?label=RC&include_prereleases&filter=*rc*&logoSize=diago)
+![GitHub Release](https://img.shields.io/github/v/release/gouef/create-contributors-action?label=Beta&include_prereleases&filter=*beta*&logoSize=diago)
 
 ## Introduction
 
-This is template repository for new libraries
+Create contributors list. SVGs will in separate branch 
 
-## Important
+## Example
 
-Edit go.mod and rename to your package module
+```yaml
+name: Generate contributors
 
-## Commit rules
-Commit message should looks like
+on:
+  workflow_dispatch:
+    inputs:
+      excludeBot:
+        description: "Exclude actions@github.com from contributors"
+        required: false
+        type: boolean
+        default: false
+      notGenerateContributorsMd:
+        required: false
+        type: boolean
+        default: false
+        description: "Not commit CONTRIBUTORS.md ?"
+      commitMessageBot:
+        required: true
+        type: string
+        default: "[Update] Automate update contributors"
+        description: "Commit message which bot will do"
+
+  schedule:
+    - cron: '0 0 * * 1'
+  pull_request:
+    types: [ opened, synchronize, edited ]
+  push:
+    branches:
+      - master
+      - main
+      - develop
+      - feature/**
+      - release/**
+      - test/**
+      - bugfix/**
+
+jobs:
+  generate-contributors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate contributors
+        uses: gouef/create-contributors-action@main
+        with:
+          excludeBot: ${{ inputs.excludeBot || false}}
+          notGenerateContributorsMd: ${{ inputs.notGenerateContributorsMd || false }}
+          commitMessageBot: ${{ inputs.commitMessageBot }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 ```
-[TYPE] some message
-```
-
-### Types
- - Add
- - Fix
- - Update
- - Remove
- - Refactor
- - Docs
- - Test
- - Improve
-
-## Contributors
-
-<div style="display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 10px;">
-<span style="width:100px;">
-  <a href="https://github.com/JanGalek"><img src="https://raw.githubusercontent.com/gouef/create-contributors-action/refs/heads/contributors-svg/.github/contributors/JanGalek.svg" alt="JanGalek" /></a>
-</span>
-</div>
-
