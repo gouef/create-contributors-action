@@ -1,0 +1,47 @@
+name: Create Release
+description: Create Release notes
+
+inputs:
+  branch:
+    required: false
+    default: "main"
+    description: "Branch"
+  prefixes:
+    required: true
+    default: "Add|Fix|Update|Remove|Refactor|Docs|Test|Improve|Merge"
+    description: "List of all allowed prefix [TYPE] where type can be Add, Fix, use Add|Fix|Update ..."
+  minLengthText:
+    required: true
+    default: 10
+    description: "Minimal length after [TYPE] for commit message"
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Lint commit messages
+      run: |
+        COMMITS=$(git log --pretty=format:"%s" HEAD^..HEAD 2>/dev/null || git log --pretty=format:"%s" HEAD)
+        
+        PREFIXES=$(echo "${{ inputs.prefixes }}" | tr ',' '|')
+        PREFIXES_LIST=$(echo "${{ inputs.prefixes }}" | tr '|' ', ')
+        
+        REGEX="^\[($PREFIXES)\] .{${{ inputs.minLengthText }},}$|^Merge .* into .*$"
+        
+        echo "$COMMITS" | while read -r COMMIT; do
+          if [[ ! $COMMIT =~ $REGEX ]]; then
+            echo "Invalid commit message: $COMMIT"
+            echo "Commit messages must match: '[TYPE] Description' (e.g., '[Add] New feature')."
+            echo "[TYPE] allowed is $PREFIXES_LIST"
+            exit 1
+          fi
+        done
+
+      shell: bash
+    - name: Commit messages are valid
+      run: echo "All commit messages are valid!"
+      shell: bash
