@@ -1,47 +1,179 @@
-name: Create Release
-description: Create Release notes
+name: Create contributors list
+description: Create contributors list
 
 inputs:
   branch:
     required: false
     default: "main"
     description: "Branch"
-  prefixes:
+
+  excludeBot:
+    required: false
+    default: "false"
+    description: "Exclude actions@github.com from contributors"
+  notGenerateContributorsMd:
+    required: false
+    default: "false"
+    description: "Not commit CONTRIBUTORS.md ?"
+  commitMessageBot:
     required: true
-    default: "Add|Fix|Update|Remove|Refactor|Docs|Test|Improve|Merge"
-    description: "List of all allowed prefix [TYPE] where type can be Add, Fix, use Add|Fix|Update ..."
-  minLengthText:
+    default: "[Update] Automate update contributors"
+    description: "Commit message which bot will do"
+  svgBranch:
     required: true
-    default: 10
-    description: "Minimal length after [TYPE] for commit message"
+    default: "contributors-svg"
+    description: "Branch where will save svgs of contributors"
+
+env:
+  GITHUB_TOKEN: "As provided by Github Actions"
 
 runs:
   using: composite
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-
-    - name: Lint commit messages
+    - uses: actions/checkout@v3
+    - name: Set up Git
       run: |
-        COMMITS=$(git log --pretty=format:"%s" HEAD^..HEAD 2>/dev/null || git log --pretty=format:"%s" HEAD)
-        
-        PREFIXES=$(echo "${{ inputs.prefixes }}" | tr ',' '|')
-        PREFIXES_LIST=$(echo "${{ inputs.prefixes }}" | tr '|' ', ')
-        
-        REGEX="^\[($PREFIXES)\] .{${{ inputs.minLengthText }},}$|^Merge .* into .*$"
-        
-        echo "$COMMITS" | while read -r COMMIT; do
-          if [[ ! $COMMIT =~ $REGEX ]]; then
-            echo "Invalid commit message: $COMMIT"
-            echo "Commit messages must match: '[TYPE] Description' (e.g., '[Add] New feature')."
-            echo "[TYPE] allowed is $PREFIXES_LIST"
-            exit 1
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+    - name: Generate SVG contributors
+      run: |
+        CONTRIBUTORS=$(gh api "/repos/${{ github.repository }}/contributors")
+        mkdir -p .github/contributors
+        echo "Exclude: ${{ inputs.excludeBot }}"
+        echo "$CONTRIBUTORS" | jq -c '.[]' | while read -r contributor; do
+          login=$(echo "$contributor" | jq -r '.login')
+          if [[ "${{ inputs.excludeBot }}" = "true" && "$login" = "actions-user" ]]; then
+            continue
           fi
+          login_url=$(echo "$contributor" | jq -r '.html_url')
+          avatar_url=$(echo "$contributor" | jq -r '.avatar_url')
+          contributions=$(echo "$contributor" | jq -r '.contributions')
+        
+          curl -o .github/contributors/${login}.jpg ${avatar_url}
+        
+          avatar=$(base64 .github/contributors/${login}.jpg)
+          rm .github/contributors/${login}.jpg
+        
+          echo "<svg width=\"180\" height=\"220\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">" > .github/contributors/${login}.svg
+          echo "<style>.text{font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";font-size: 16px;line-height: 1.5;word-wrap: break-word;}</style>" >> .github/contributors/${login}.svg
+          echo "<defs><mask id=\"circle-mask\"><circle cx=\"50%\" cy=\"75\" r=\"60\" fill=\"white\" /></mask></defs>" >> .github/contributors/${login}.svg
+          echo "<g>" >> .github/contributors/${login}.svg
+          echo "<image href=\"data:image/jpeg;base64,$avatar\" x=\"15\" y=\"0\" width=\"150\" height=\"150\" mask=\"url(#circle-mask)\" />" >> .github/contributors/${login}.svg
+          echo "<a href=\"$login_url\">" >> .github/contributors/${login}.svg
+          echo "<text class=\"text\" x=\"50%\" y=\"170\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"16\" fill=\"#4493f8\">@$login</text>" >> .github/contributors/${login}.svg
+          echo "</a>" >> .github/contributors/${login}.svg
+          echo "<text class=\"text\" x=\"50%\" y=\"195\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"14\" fill=\"orange\">$contributions</text>" >> .github/contributors/${login}.svg
+          echo "  </g>" >> .github/contributors/${login}.svg
+          echo "</svg>" >> .github/contributors/${login}.svg
         done
+      env:
+        GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+    - name: Get contributors
+      run: |
+        CONTRIBUTORS=$(gh api "/repos/${{ github.repository }}/contributors")
+        svg_link="https://raw.githubusercontent.com/${{ github.repository }}/refs/heads/${{ inputs.svgBranch }}"
+        
+        echo "" > CONTRIBUTORS.md
+        echo "<div style=\"display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 10px;\">" >> CONTRIBUTORS.md
+        echo "$CONTRIBUTORS" | jq -c '.[]' | while read -r contributor; do
+          login=$(echo "$contributor" | jq -r '.login')
+          if [[ "${{ inputs.excludeBot }}" = "true" && "$login" = "actions-user" ]]; then
+            continue
+          fi
+          login_url=$(echo "$contributor" | jq -r '.html_url')
+          avatar_url=$(echo "$contributor" | jq -r '.avatar_url')
+          contributions=$(echo "$contributor" | jq -r '.contributions')
+          avatar_url=$(echo "${svg_link}/.github/contributors/${login}.svg")
+        
+          echo "<span style=\"width:100px;\">" >> CONTRIBUTORS.md
+          echo "  <a href=\"$login_url\"><img src=\"${avatar_url}\" alt=\"${login}\" /></a>" >> CONTRIBUTORS.md
+          echo "</span>" >> CONTRIBUTORS.md
+        done
+        echo "</div>" >> CONTRIBUTORS.md
+        echo "" >> CONTRIBUTORS.md
+        cat CONTRIBUTORS.md
+      env:
+        GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+    - name: Commit SVG files to a separate branch
+      run: |
+        if git show-ref --quiet refs/heads/${{ inputs.svgBranch }}; then
+          git switch ${{ inputs.svgBranch }}
+        else
+          git checkout -b ${{ inputs.svgBranch }}
+        fi
+        git add .github/contributors/*.svg
+        git commit -m "[Update] Generated SVG contributors"
+        git push origin ${{ inputs.svgBranch }} --force
+        
+        git checkout ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+    - name: Update README
+      run: |
+        if ! grep -q "^## Contributors$" README.md; then
+          echo "" >> README.md
+          echo "## Contributors" >> README.md
+        fi
+        
+        awk '
+          BEGIN {in_contributors=0}
+        
+          /^## Contributors$/ {print; in_contributors=1; system("cat CONTRIBUTORS.md"); next}
+        
+          /^##/ && in_contributors {
+            in_contributors=0
+            print
+            next
+          }
+        
+          {if (!in_contributors) print}
+        ' README.md > README.tmp
+        
+        mv README.tmp README.md
+        
+        if [[ "${{ inputs.notGenerateContributorsMd }}" == "true" ]]; then
+          echo "notGenerateContributorsMd is true. Removing CONTRIBUTORS.md."
+          if git ls-files --error-unmatch CONTRIBUTORS.md --stage > /dev/null 2>&1; then
+            git reset CONTRIBUTORS.md
+          fi
+          rm -f CONTRIBUTORS.md
+        else
+          echo "notGenerateContributorsMd is false. Checking for changes in CONTRIBUTORS.md."
+          if [[ -f CONTRIBUTORS.md ]]; then
+            if git ls-files --error-unmatch CONTRIBUTORS.md --stage > /dev/null 2>&1; then
+              if git diff --quiet -- CONTRIBUTORS.md; then
+                echo "CONTRIBUTORS.md has no changes. Skipping commit for this file."
+                git restore --staged CONTRIBUTORS.md
+              else
+                git add CONTRIBUTORS.md
+              fi
+            else
+              echo "CONTRIBUTORS.md is not tracked in Git. Adding it."
+              git add CONTRIBUTORS.md
+            fi
+          else
+            echo "CONTRIBUTORS.md does not exist. Skipping."
+          fi
+        fi
+        
+        git add README.md
+        
+        if git diff --cached --quiet; then
+          echo "Žádné změny, nic k commitování."
+        else
+          git commit -m "${{ inputs.commitMessageBot }}"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
+        fi
 
-      shell: bash
-    - name: Commit messages are valid
-      run: echo "All commit messages are valid!"
-      shell: bash
+    - name: Commit and push changes
+      run: |
+        if git diff --quiet ./; then
+          echo "Žádné změny, nic k commitování."
+        else
+          git add .
+          git commit -m "${{ inputs.commitMessageBot }}"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
+        fi
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}

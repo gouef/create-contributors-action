@@ -13,6 +13,12 @@ on:
         type: boolean
         default: false
         description: "Not commit CONTRIBUTORS.md ?"
+      commitMessageBot:
+        required: true
+        type: string
+        default: "[Update] Automate update contributors"
+        description: "Commit message which bot will do"
+
   schedule:
     - cron: '0 0 * * 1'
   pull_request:
@@ -28,8 +34,14 @@ on:
       - bugfix/**
 
 jobs:
-  update-contributors:
-    uses: gouef/github-lib-template/.github/workflows/shared_contributors.yml@main
-    with:
-      excludeBot: ${{ inputs.excludeBot || false}}
-      notGenerateContributorsMd: ${{ inputs.notGenerateContributorsMd || false }}
+  generate-contributors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate contributors
+        uses: gouef/create-contributors-action@main
+        with:
+          excludeBot: ${{ inputs.excludeBot || false}}
+          notGenerateContributorsMd: ${{ inputs.notGenerateContributorsMd || false }}
+          commitMessageBot: ${{ inputs.commitMessageBot }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
