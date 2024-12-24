@@ -35,6 +35,7 @@ runs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
+      shell: bash
     - name: Generate SVG contributors
       run: |
         CONTRIBUTORS=$(gh api "/repos/${{ github.repository }}/contributors")
@@ -66,6 +67,7 @@ runs:
           echo "  </g>" >> .github/contributors/${login}.svg
           echo "</svg>" >> .github/contributors/${login}.svg
         done
+      shell: bash
       env:
         GH_TOKEN: ${{ env.GITHUB_TOKEN }}
     - name: Get contributors
@@ -92,6 +94,7 @@ runs:
         echo "</div>" >> CONTRIBUTORS.md
         echo "" >> CONTRIBUTORS.md
         cat CONTRIBUTORS.md
+      shell: bash
       env:
         GH_TOKEN: ${{ env.GITHUB_TOKEN }}
     - name: Commit SVG files to a separate branch
@@ -106,6 +109,7 @@ runs:
         git push origin ${{ inputs.svgBranch }} --force
         
         git checkout ${{ github.ref_name }}
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         GH_TOKEN: ${{ env.GITHUB_TOKEN }}
@@ -165,6 +169,7 @@ runs:
           git commit -m "${{ inputs.commitMessageBot }}"
           git push origin HEAD:${{ github.event.repository.default_branch }}
         fi
+      shell: bash
 
     - name: Commit and push changes
       run: |
@@ -175,5 +180,6 @@ runs:
           git commit -m "${{ inputs.commitMessageBot }}"
           git push origin HEAD:${{ github.event.repository.default_branch }}
         fi
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
