@@ -21,28 +21,6 @@ Create contributors list. SVGs will in separate branch
 name: Generate contributors
 
 on:
-  workflow_dispatch:
-    inputs:
-      excludeBot:
-        description: "Exclude actions@github.com from contributors"
-        required: false
-        type: boolean
-        default: false
-      notGenerateContributorsMd:
-        required: false
-        type: boolean
-        default: false
-        description: "Not commit CONTRIBUTORS.md ?"
-      commitMessageBot:
-        required: true
-        type: string
-        default: "[Update] Automate update contributors"
-        description: "Commit message which bot will do"
-      svgBranch:
-        required: true
-        default: "contributors-svg"
-        description: "Branch where will save svgs of contributors"
-
   schedule:
     - cron: '0 0 * * 1'
   pull_request:
@@ -64,10 +42,10 @@ jobs:
       - name: Generate contributors
         uses: gouef/create-contributors-action@main
         with:
-          excludeBot: ${{ inputs.excludeBot || false}}
-          notGenerateContributorsMd: ${{ inputs.notGenerateContributorsMd || false }}
-          commitMessageBot: ${{ inputs.commitMessageBot || "[Update] Automate update contributors" }}
-          svgBranch:  ${{ inputs.svgBranch || "contributors-svg" }}
+          excludeBot: false
+          notGenerateContributorsMd: false
+          commitMessageBot: "[Update] Automate update contributors"
+          svgBranch: "contributors-svg"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
