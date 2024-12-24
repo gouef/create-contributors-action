@@ -1,5 +1,8 @@
 name: Create contributors list
 description: Create contributors list
+branding:
+  icon: users
+  color: blue
 
 inputs:
   branch:
