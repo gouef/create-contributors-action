@@ -90,7 +90,7 @@ runs:
           contributions=$(echo "$contributor" | jq -r '.contributions')
           avatar_url=$(echo "${svg_link}/.github/contributors/${login}.svg")
         
-          echo "<span style=\"width:100px;\">" >> CONTRIBUTORS.md
+          echo "<span>" >> CONTRIBUTORS.md
           echo "  <a href=\"$login_url\"><img src=\"${avatar_url}\" alt=\"${login}\" /></a>" >> CONTRIBUTORS.md
           echo "</span>" >> CONTRIBUTORS.md
         done
