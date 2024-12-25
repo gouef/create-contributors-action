@@ -79,7 +79,7 @@ runs:
         svg_link="https://raw.githubusercontent.com/${{ github.repository }}/refs/heads/${{ inputs.svgBranch }}"
         
         echo "" > CONTRIBUTORS.md
-        echo "<div style=\"display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 10px;\">" >> CONTRIBUTORS.md
+        echo "<div>" >> CONTRIBUTORS.md
         echo "$CONTRIBUTORS" | jq -c '.[]' | while read -r contributor; do
           login=$(echo "$contributor" | jq -r '.login')
           if [[ "${{ inputs.excludeBot }}" = "true" && "$login" = "actions-user" ]]; then
