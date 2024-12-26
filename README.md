@@ -4,7 +4,7 @@
 Github action for create contributors list
 
 [![GitHub stars](https://img.shields.io/github/stars/gouef/create-contributors-action?style=social)](https://github.com/gouef/create-contributors-action/stargazers)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gouef/create-contributors-action)](https://goreportcard.com/report/github.com/gouef/create-contributors-action)
+![Usages](https://img.shields.io/endpoint?url=https://github-repo-usages.vercel.app/api/getAction.go?repository=gouef/create-contributors-action)
 
 ## Versions
 ![Stable Version](https://img.shields.io/github/v/release/gouef/create-contributors-action?label=Stable&labelColor=green)
