@@ -1,7 +1,7 @@
 <img align=right width="168" src="docs/gouef_logo.png">
 
 # Create contributors action
-Github action for create contributors list
+Github action for Create / Generate contributors list to your (README)
 
 [![GitHub stars](https://img.shields.io/github/stars/gouef/create-contributors-action?style=social)](https://github.com/gouef/create-contributors-action/stargazers)
 ![Usages](https://img.shields.io/endpoint?url=https://github-repo-usages.vercel.app/api/getAction.go?repository=gouef/create-contributors-action)
