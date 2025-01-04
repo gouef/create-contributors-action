@@ -1,5 +1,5 @@
 name: Create contributors list
-description: Create contributors list
+description: Create / Generate contributors list to your (README)
 branding:
   icon: users
   color: blue
