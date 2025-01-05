@@ -51,6 +51,7 @@ jobs:
 ```
 
 ### Action inputs
+
 | Input | Default | Required | Description                                  |
 |-------|---------|----------|----------------------------------------------|
 | `branch` | `main` | `false` | Branch                                       |
