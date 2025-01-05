@@ -52,13 +52,13 @@ jobs:
 
 ### Action inputs
 
-| Input | Default | Required | Description                                  |
-|-------|---------|----------|----------------------------------------------|
-| `branch` | `main` | `false` | Branch                                       |
-| `excludeBot` | `false` | `true` | Exclude actions@github.com from contributors |
-| `notGenerateContributorsMd` | `false` | `true` | Not commit generated CONTRIBUTORS.md ?       |
-| `commitMessageBot` | `[Update] Automate update contributors` | `true` | Commit message which bot will do             |
-| `svgBranch` | `contributors-svg` | `true` | Branch where will save svgs of contributors  |
+| Input                       | Default                                 | Required | Description                                  |
+|-----------------------------|-----------------------------------------|----------|----------------------------------------------|
+| `branch`                    | `main`                                  | `false`  | Branch                                       |
+| `excludeBot`                | `false`                                 | `true`   | Exclude actions@github.com from contributors |
+| `notGenerateContributorsMd` | `false`                                 | `true`   | Not commit generated CONTRIBUTORS.md ?       |
+| `commitMessageBot`          | `[Update] Automate update contributors` | `true`   | Commit message which bot will do             |
+| `svgBranch`                 | `contributors-svg`                      | `true`   | Branch where will save svgs of contributors  |
 
 ## Contributors
 
