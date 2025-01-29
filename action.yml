@@ -13,7 +13,17 @@ inputs:
   excludeBot:
     required: true
     default: "false"
-    description: "Exclude actions@github.com from contributors"
+    description: "Exclude bot from contributors"
+
+  botName:
+    required: false
+    default: "GitHub Actions"
+    description: "Set bot name for contributors"
+
+  botEmail:
+    required: false
+    default: "actions@github.com"
+    description: "Set bot email address for contributors"
   notGenerateContributorsMd:
     required: true
     default: "false"
@@ -36,8 +46,8 @@ runs:
     - uses: actions/checkout@v3
     - name: Set up Git
       run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
+        git config --global user.name "${{ inputs.botName }}"
+        git config --global user.email "${{ inputs.botEmail }}"
       shell: bash
     - name: Generate SVG contributors
       run: |
